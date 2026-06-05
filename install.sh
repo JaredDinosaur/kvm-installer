@@ -97,7 +97,7 @@ case ${PIPESTATUS[0]} in
         exit 4
         ;;
 esac
-sudo pacman -S --needed --noconfirm qemu-full virt-manager virt-viewer libvirt dnsmasq edk2-ovmf swtpm iptables-nft 2>&1 | tee -a kvm-install.log | grep --line-buffered -E '::'
+sudo pacman -S --needed --noconfirm qemu-full virt-manager virt-viewer libvirt dnsmasq edk2-ovmf swtpm iptables-nft 2>&1 | tee -a kvm-install.log | grep --line-buffered -E 'Retrieving|Processing|Running'
 case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Installed required packages."
