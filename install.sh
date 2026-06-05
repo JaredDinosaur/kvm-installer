@@ -68,9 +68,9 @@ else
     # Attempt to load KVM kernel modules
     echo -e '\e[1m\e[33m'"[WARN]" '\e(B\e[m'"KVM kernel modules are not loaded, attempting to load now..."
     if [[ $cpuman == "intel" ]]; then
-        sudo modprobe kvm_intel 2>&1 | tee -a kvm-install.log &>/dev/null
+        sudo modprobe kvm_intel 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
     else
-        sudo modprobe kvm_amd 2>&1 | tee -a kvm-install.log &>/dev/null
+        sudo modprobe kvm_amd 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
     fi
     case ${PIPESTATUS[0]} in
         0)
@@ -86,7 +86,7 @@ fi
 
 # Install needed packages
 echo -e '\e[1m\e[34m'"[INFO]" '\e(B\e[m'"Installing required packages..."
-sudo pacman -Syy 2>&1 | tee -a kvm-install.log &>/dev/null
+sudo pacman -Syy 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
 case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Synchronised package databases."
@@ -110,7 +110,7 @@ case ${PIPESTATUS[0]} in
 esac
 
 # Enable systemd service
-sudo systemctl enable libvirtd 2>&1 | tee -a kvm-install.log &>/dev/null
+sudo systemctl enable libvirtd 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
 case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Enabled system service."
@@ -121,7 +121,7 @@ case ${PIPESTATUS[0]} in
         exit 6
         ;;
 esac
-sudo systemctl start libvirtd 2>&1 | tee -a kvm-install.log &>/dev/null
+sudo systemctl start libvirtd 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
 case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Started system service."
@@ -134,7 +134,7 @@ case ${PIPESTATUS[0]} in
 esac
 
 # Add user to libvirt group
-sudo usermod -aG libvirt "$(whoami)" 2>&1 | tee -a kvm-install.log &>/dev/null
+sudo usermod -aG libvirt "$(whoami)" 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
 case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Added user to libvirt group."
@@ -145,7 +145,7 @@ case ${PIPESTATUS[0]} in
 esac
 
 # Enable virtual network
-sudo virsh net-start default 2>&1 | tee -a kvm-install.log &>/dev/null
+sudo virsh net-start default 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
 case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Started virtual network."
@@ -154,7 +154,7 @@ case ${PIPESTATUS[0]} in
         echo -e '\e[1m\e[33m'"[WARN]" '\e(B\e[m'"Failed to start virtual network."
         ;;
 esac
-sudo virsh net-autostart default 2>&1 | tee -a kvm-install.log &>/dev/null
+sudo virsh net-autostart default 2>&1 | tee -a kvm-install.log | grep -E 'hidethistext'
 case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Enabled virtual network."
