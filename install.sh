@@ -44,9 +44,19 @@ case $(grep -cE 'vmx|svm' /proc/cpuinfo) in
         ;;
 esac
 
+# Check that KVM is supported
+if [[ -e /dev/kvm ]]; then
+    echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"KVM is supported."
+else
+    echo -e '\e[1m\e[31m'"[FAIL]" '\e(B\e[m'"KVM is not supported!"
+    echo -e '\e[1m\e[37m'"[STOP]" '\e(B\e[m'"No KVM support found."
+    exit 3
+fi
+
 # Create new log in kvm-install.log
 if [[ -s kvm-install.log ]]; then
-    echo "\nLOG START: $(date)" >> kvm-install.log
+    echo "" >> kvm-install.log
+    echo "LOG START: $(date)" >> kvm-install.log
 else
     echo "LOG START: $(date)" > kvm-install.log
 fi
@@ -58,11 +68,11 @@ else
     # Attempt to load KVM kernel modules
     echo -e '\e[1m\e[33m'"[WARN]" '\e(B\e[m'"KVM kernel modules are not loaded, attempting to load now..."
     if [[ $cpuman == "intel" ]]; then
-        sudo modprobe kvm_intel 2>&1 | tee kvm-install.log &>/dev/null
+        sudo modprobe kvm_intel 2>&1 | tee -a kvm-install.log &>/dev/null
     else
-        sudo modprobe kvm_amd 2>&1 | tee kvm-install.log &>/dev/null
+        sudo modprobe kvm_amd 2>&1 | tee -a kvm-install.log &>/dev/null
     fi
-    case $? in
+    case ${PIPESTATUS[0]} in
         0)
             echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Kernel modules loaded successfully."
             ;;
@@ -76,8 +86,8 @@ fi
 
 # Install needed packages
 echo -e '\e[1m\e[34m'"[INFO]" '\e(B\e[m'"Installing required packages..."
-sudo pacman -Syy 2>&1 | tee kvm-install.log &>/dev/null
-case $? in
+sudo pacman -Syy 2>&1 | tee -a kvm-install.log &>/dev/null
+case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Synchronised package databases."
         ;;
@@ -87,8 +97,8 @@ case $? in
         exit 4
         ;;
 esac
-sudo pacman -S --needed --noconfirm qemu-full virt-manager virt-viewer libvirt dnsmasq edk2-ovmf swtpm iptables-nft 2>&1 | tee kvm-install.log | grep --line-buffered -E '...'
-case $? in
+sudo pacman -S --needed --noconfirm qemu-full virt-manager virt-viewer libvirt dnsmasq edk2-ovmf swtpm iptables-nft 2>&1 | tee -a kvm-install.log | grep --line-buffered -E '::'
+case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Installed required packages."
         ;;
@@ -100,8 +110,8 @@ case $? in
 esac
 
 # Enable systemd service
-sudo systemctl enable libvirtd 2>&1 | tee kvm-install.log &>/dev/null
-case $? in
+sudo systemctl enable libvirtd 2>&1 | tee -a kvm-install.log &>/dev/null
+case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Enabled system service."
         ;;
@@ -111,8 +121,8 @@ case $? in
         exit 6
         ;;
 esac
-sudo systemctl start libvirtd 2>&1 | tee kvm-install.log &>/dev/null
-case $? in
+sudo systemctl start libvirtd 2>&1 | tee -a kvm-install.log &>/dev/null
+case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Started system service."
         ;;
@@ -124,8 +134,8 @@ case $? in
 esac
 
 # Add user to libvirt group
-sudo usermod -aG libvirt $(whoami) 2>&1 | tee kvm-install.log &>/dev/null
-case $? in
+sudo usermod -aG libvirt "$(whoami)" 2>&1 | tee -a kvm-install.log &>/dev/null
+case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Added user to libvirt group."
         ;;
@@ -135,8 +145,8 @@ case $? in
 esac
 
 # Enable virtual network
-sudo virsh net-start default 2>&1 | tee kvm-install.log &>/dev/null
-case $? in
+sudo virsh net-start default 2>&1 | tee -a kvm-install.log &>/dev/null
+case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Started virtual network."
         ;;
@@ -144,8 +154,8 @@ case $? in
         echo -e '\e[1m\e[33m'"[WARN]" '\e(B\e[m'"Failed to start virtual network."
         ;;
 esac
-sudo virsh net-autostart default 2>&1 | tee kvm-install.log &>/dev/null
-case $? in
+sudo virsh net-autostart default 2>&1 | tee -a kvm-install.log &>/dev/null
+case ${PIPESTATUS[0]} in
     0)
         echo -e '\e[1m\e[32m'"[ OK ]" '\e(B\e[m'"Enabled virtual network."
         ;;
